@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Chat Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #101318;
+    --surface: #171b22;
+    --border: #262b34;
+    --text: #E6E8EC;
+    --muted: #8A8F99;
+    --accent: #8B93FF;
+    --radius: 12px;
+  }
+
+  html[data-theme="light"] {
+    --bg: #FAFAFA;
+    --surface: #FFFFFF;
+    --border: #E5E5E5;
+    --text: #1A1A1A;
+    --muted: #7A7A7A;
+    --accent: #5A62D6;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, sans-serif;
+  }
+
+  .shell {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 36px 28px 64px;
+  }
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  h1 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+  }
+  .tagline {
+    font-size: 12.5px;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+
+  .header-controls {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+
+  .status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .status .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  .theme-toggle {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 12px;
+    padding: 5px 11px;
+    border-radius: 999px;
+    cursor: pointer;
+  }
+  .theme-toggle:hover { border-color: var(--accent); }
+
+  .section-label {
+    font-size: 11.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin: 0 0 14px 2px;
+  }
+
+  .platform-section {
+    margin-bottom: 30px;
+  }
+  .platform-section:last-child {
+    margin-bottom: 0;
+  }
+  .platform-heading {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin: 0 0 12px 2px;
+  }
+  .platform-heading h2 {
+    font-size: 13.5px;
+    font-weight: 600;
+    margin: 0;
+  }
+  .platform-heading .count {
+    font-size: 11.5px;
+    color: var(--muted);
+  }
+
+  .name-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .name-row h3 {
+    font-size: 14.5px;
+    font-weight: 600;
+    margin: 0;
+  }
+  .name-row .placeholder {
+    color: var(--muted);
+    font-weight: 500;
+  }
+  .rename-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 12px;
+    padding: 2px 5px;
+    border-radius: 6px;
+    opacity: 0;
+    transition: opacity 0.15s ease, color 0.15s ease;
+  }
+  .card:hover .rename-btn {
+    opacity: 1;
+  }
+  .rename-btn:hover {
+    color: var(--accent);
+  }
+  .name-input {
+    font-size: 14.5px;
+    font-weight: 600;
+    font-family: inherit;
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--accent);
+    border-radius: 6px;
+    padding: 4px 7px;
+    width: 100%;
+    outline: none;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    transition: border-color 0.2s ease;
+  }
+  .card:hover { border-color: var(--accent); }
+
+  .card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .platform-badge {
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+  }
+
+  .chat-count {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .card h2 {
+    font-size: 14.5px;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .chat-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  .chat-list::-webkit-scrollbar { width: 4px; }
+  .chat-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 8px; }
+
+  .chat-list li {
+    font-size: 13px;
+    padding: 6px 4px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+  }
+  .chat-list li:last-child { border-bottom: none; }
+
+  .card-meta {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    font-size: 11.5px;
+    color: var(--muted);
+  }
+
+  .empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 70px 20px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .empty-state h3 {
+    color: var(--text);
+    font-size: 14.5px;
+    font-weight: 600;
+    margin: 0 0 6px;
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <header>
+    <div>
+      <h1>AI Chat Tracker</h1>
+      <div class="tagline">Every profile, every model, one view</div>
+    </div>
+    <div class="header-controls">
+      <div class="status"><span class="dot"></span> Live</div>
+      <button class="theme-toggle" id="themeToggle">Toggle theme</button>
+    </div>
+  </header>
+
+  <div id="sections"></div>
+</div>
+
+<script>
+const root = document.documentElement;
+const toggle = document.getElementById('themeToggle');
+root.setAttribute('data-theme', localStorage.getItem('theme') || 'dark');
+toggle.addEventListener('click', () => {
+  const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  root.setAttribute('data-theme', next);
+  localStorage.setItem('theme', next);
+});
+
+const sectionsEl = document.getElementById('sections');
+
+const PLATFORM_ORDER = ['claude', 'chatgpt', 'gemini', 'grok'];
+const platformLabel = {
+  claude: 'Claude',
+  chatgpt: 'ChatGPT',
+  gemini: 'Gemini',
+  grok: 'Grok'
+};
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// escapeHtml is safe for text content but not for attribute values, since
+// it doesn't encode quote characters. Used for data-profile-id below.
+function escapeAttr(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function timeAgo(iso) {
+  const sec = Math.floor((Date.now() - new Date(iso)) / 1000);
+  if (sec < 5) return 'just now';
+  if (sec < 60) return sec + 's ago';
+  if (sec < 3600) return Math.floor(sec / 60) + 'm ago';
+  return Math.floor(sec / 3600) + 'h ago';
+}
+
+function renderEmpty() {
+  sectionsEl.innerHTML = `
+    <div class="empty-state">
+      <h3>No chats tracked yet</h3>
+      <p>Open a tracked AI site in a labeled Chrome profile — it'll show up here in seconds.</p>
+    </div>
+  `;
+}
+
+function cardHtml(profileId, profile, platform, entry) {
+  const hasLabel = !!profile.label;
+  const nameHtml = hasLabel
+    ? escapeHtml(profile.label)
+    : `<span class="placeholder">Unlabeled (${profileId.slice(0, 6)})</span>`;
+
+  const items = entry.chats.slice(0, 40)
+    .map((c) => `<li>${escapeHtml(c.title)}</li>`)
+    .join('');
+
+  return `
+    <div class="card" data-profile-id="${escapeAttr(profileId)}">
+      <div class="card-top">
+        <span class="chat-count">${entry.chats.length} chats</span>
+      </div>
+      <div class="name-row" data-role="name-row">
+        <h3 data-role="name-display">${nameHtml}</h3>
+        <button class="rename-btn" data-role="rename-btn" title="Rename">✎</button>
+      </div>
+      <ul class="chat-list">${items || '<li style="color:var(--muted)">No chats found</li>'}</ul>
+      <div class="card-meta">Updated ${timeAgo(entry.lastUpdated)}</div>
+    </div>
+  `;
+}
+
+function render(data) {
+  const profileIds = Object.keys(data);
+  if (profileIds.length === 0) {
+    renderEmpty();
+    return;
+  }
+
+  // Group by platform first, so each AI gets its own section.
+  const byPlatform = {};
+  for (const profileId of profileIds) {
+    const profile = data[profileId];
+    for (const platform of Object.keys(profile.platforms || {})) {
+      if (!byPlatform[platform]) byPlatform[platform] = [];
+      byPlatform[platform].push({ profileId, profile, entry: profile.platforms[platform] });
+    }
+  }
+
+  const platforms = Object.keys(byPlatform).sort((a, b) => {
+    const ai = PLATFORM_ORDER.indexOf(a);
+    const bi = PLATFORM_ORDER.indexOf(b);
+    if (ai === -1 && bi === -1) return a.localeCompare(b);
+    if (ai === -1) return 1;
+    if (bi === -1) return -1;
+    return ai - bi;
+  });
+
+  if (platforms.length === 0) {
+    renderEmpty();
+    return;
+  }
+
+  sectionsEl.innerHTML = platforms.map((platform) => {
+    const cards = byPlatform[platform]
+      .map(({ profileId, profile, entry }) => cardHtml(profileId, profile, platform, entry))
+      .join('');
+    return `
+      <section class="platform-section">
+        <div class="platform-heading">
+          <h2>${escapeHtml(platformLabel[platform] || platform)}</h2>
+          <span class="count">${byPlatform[platform].length} profile${byPlatform[platform].length === 1 ? '' : 's'}</span>
+        </div>
+        <div class="grid">${cards}</div>
+      </section>
+    `;
+  }).join('');
+}
+
+async function saveLabel(profileId, label) {
+  try {
+    await fetch('/label', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ profileId, label })
+    });
+  } catch (err) {
+    // server unreachable — next refresh will just show the old label
+  }
+  refresh();
+}
+
+// Event delegation: handles rename clicks for cards that get re-rendered
+// on every refresh.
+sectionsEl.addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-role="rename-btn"]');
+  if (!btn) return;
+
+  const card = btn.closest('.card');
+  const profileId = card.getAttribute('data-profile-id');
+  const nameRow = card.querySelector('[data-role="name-row"]');
+  const display = card.querySelector('[data-role="name-display"]');
+  const currentText = display.textContent.trim();
+  const currentValue = display.querySelector('.placeholder') ? '' : currentText;
+
+  const input = document.createElement('input');
+  input.className = 'name-input';
+  input.value = currentValue;
+  input.placeholder = 'Add a label';
+
+  nameRow.replaceChildren(input);
+  input.focus();
+  input.select();
+
+  const commit = () => {
+    const val = input.value.trim();
+    saveLabel(profileId, val);
+  };
+
+  input.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Enter') input.blur();
+    if (ev.key === 'Escape') { input.removeEventListener('blur', commit); refresh(); }
+  });
+  input.addEventListener('blur', commit, { once: true });
+});
+
+async function refresh() {
+  try {
+    const res = await fetch('/api/data');
+    const data = await res.json();
+    render(data);
+  } catch (err) {
+    // server not reachable — leave current view as-is
+  }
+}
+
+renderEmpty();
+refresh();
+setInterval(refresh, 3000);
+</script>
+</body>
+</html>
