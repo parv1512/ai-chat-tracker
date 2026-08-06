@@ -127,9 +127,3 @@ you create or delete chats (it re-scrapes on every sidebar change).
 - Scraping depends on claude.ai's current DOM structure. If Anthropic
   changes the sidebar markup, the selector in `content-claude.js` may need
   a tweak.
-
-## Next steps once this checks out
-
-- Add content scripts for ChatGPT, Gemini, Grok.
-- Add "recently added / removed" badges to the dashboard.
-- Optionally switch dashboard refresh from polling to a WebSocket push.
